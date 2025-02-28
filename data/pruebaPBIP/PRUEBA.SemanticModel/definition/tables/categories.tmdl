@@ -1,0 +1,22 @@
+table categories
+	lineageTag: eedbc71c-56a5-47d3-9c91-cf5032a3c76a
+
+	column category
+		lineageTag: 469ba441-dd98-4147-bb39-0cd4a34d3298
+		summarizeBy: none
+		sourceColumn: netflix_titles[category 1]
+
+		annotation SummarizationSetBy = Automatic
+
+	partition categories = calculated
+		mode: import
+		source =
+				DISTINCT(
+				    UNION(
+				    ALLNOBLANKROW(netflix_titles[category 1]),
+				    ALLNOBLANKROW(netflix_titles[category 2]),
+				    ALLNOBLANKROW(netflix_titles[category 3])
+				    ))
+
+	annotation PBI_Id = bdb6b28e7cfe41bfadb85b3b6de55c08
+

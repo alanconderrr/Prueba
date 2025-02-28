@@ -1,0 +1,158 @@
+table netflix_titles
+	lineageTag: f3977a8c-3334-4a6c-b2c4-c81ba1983c95
+
+	measure total_tv_shows = COUNTROWS(FILTER(netflix_titles, netflix_titles[type] = "TV Show"))
+		formatString: 0
+		lineageTag: 414dd168-f210-48bb-bc18-743a91430822
+
+	measure total_movies = COUNTROWS(FILTER(netflix_titles, netflix_titles[type] = "Movie"))
+		formatString: 0
+		lineageTag: eb89b307-f69c-4b52-9a79-92d36de0d658
+
+	measure total_rows = (COUNTROWS(netflix_titles))
+		formatString: 0
+		lineageTag: 0bc068ab-d387-4df4-9377-b5691f4850c5
+
+	measure Measure = DISTINCTCOUNT(netflix_titles[category 1])
+		formatString: 0
+		lineageTag: 59cab7e1-00c2-46bc-ad49-cee8093fba42
+
+	column show_id
+		dataType: string
+		lineageTag: 65820780-bdd1-4da1-bdf1-51c30f4676f5
+		summarizeBy: none
+		sourceColumn: show_id
+
+		annotation SummarizationSetBy = Automatic
+
+	column type
+		dataType: string
+		lineageTag: cfc4a593-8ab6-444b-b3ed-6fd5c95ddd65
+		summarizeBy: none
+		sourceColumn: type
+
+		annotation SummarizationSetBy = Automatic
+
+	column title
+		dataType: string
+		lineageTag: 31117050-eef4-4ba5-bc90-be2262d4ea3f
+		summarizeBy: none
+		sourceColumn: title
+
+		annotation SummarizationSetBy = Automatic
+
+	column director
+		dataType: string
+		lineageTag: ae2c654d-cb0a-4a42-ac7a-71fdb7d6c1c4
+		summarizeBy: none
+		sourceColumn: director
+
+		annotation SummarizationSetBy = Automatic
+
+	column cast
+		dataType: string
+		lineageTag: a2ce3ab9-a469-4d5a-a099-19be9cba66d9
+		summarizeBy: none
+		sourceColumn: cast
+
+		annotation SummarizationSetBy = Automatic
+
+	column country
+		dataType: string
+		lineageTag: 65289f58-e7ee-4a83-b317-87af2b651ef6
+		summarizeBy: none
+		sourceColumn: country
+
+		annotation SummarizationSetBy = Automatic
+
+	column date_added
+		dataType: string
+		lineageTag: 6ac6f5d9-0e59-4555-be45-937bfeb0e6de
+		summarizeBy: none
+		sourceColumn: date_added
+
+		annotation SummarizationSetBy = Automatic
+
+	column release_year
+		dataType: string
+		lineageTag: 39b91b39-fbae-4308-8295-e326596f7544
+		summarizeBy: none
+		sourceColumn: release_year
+
+		annotation SummarizationSetBy = Automatic
+
+	column rating
+		dataType: string
+		lineageTag: e0a0492d-147f-4490-bf9b-2b94643f6435
+		summarizeBy: none
+		sourceColumn: rating
+
+		annotation SummarizationSetBy = Automatic
+
+	column duration
+		dataType: string
+		lineageTag: 2e1039bb-1804-43be-83f0-f2ad494c2e00
+		summarizeBy: none
+		sourceColumn: duration
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'category 1'
+		dataType: string
+		lineageTag: 5da366b7-4058-4209-a8d9-29ae34d51fdd
+		summarizeBy: distinctCount
+		sourceColumn: category 1
+
+		annotation SummarizationSetBy = User
+
+	column 'category 2'
+		dataType: string
+		lineageTag: 63bd8a90-052e-4a13-b9f6-ac2837250b69
+		summarizeBy: none
+		sourceColumn: category 2
+
+		annotation SummarizationSetBy = Automatic
+
+	column 'category 3'
+		dataType: string
+		lineageTag: e0e4d5bb-c1ab-4a6a-94b4-b1dfc37b9363
+		summarizeBy: distinctCount
+		sourceColumn: category 3
+
+		annotation SummarizationSetBy = User
+
+	column description
+		dataType: string
+		lineageTag: 49197b5e-e4bb-4c6c-92d3-01aa2af30381
+		summarizeBy: none
+		sourceColumn: description
+
+		annotation SummarizationSetBy = Automatic
+
+	partition netflix_titles = m
+		mode: import
+		source =
+				let
+				    Source = Csv.Document(File.Contents("C:\Users\alanc\OneDrive\Escritorio\netflix_titles.csv"),[Delimiter=",", Columns=12, Encoding=65001, QuoteStyle=QuoteStyle.None]),
+				    #"Promoted Headers" = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+				    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"show_id", type text}, {"type", type text}, {"title", type text}, {"director", type text}, {"cast", type text}, {"country", type text}, {"date_added", type date}, {"release_year", Int64.Type}, {"rating", type text}, {"duration", type text}, {"listed_in", type text}, {"description", type text}}),
+				    #"Removed Duplicates" = Table.Distinct(#"Changed Type", {"show_id"}),
+				    #"Replaced Value" = Table.ReplaceValue(#"Removed Duplicates","","Unknown",Replacer.ReplaceValue,{"director"}),
+				    #"Replaced Value1" = Table.ReplaceValue(#"Replaced Value","","Unknown",Replacer.ReplaceValue,{"type"}),
+				    #"Replaced Value2" = Table.ReplaceValue(#"Replaced Value1","","Unknown",Replacer.ReplaceValue,{"cast"}),
+				    #"Replaced Value3" = Table.ReplaceValue(#"Replaced Value2","","Unknown",Replacer.ReplaceValue,{"country"}),
+				    #"Replaced Value4" = Table.ReplaceValue(#"Replaced Value3","","Unknown",Replacer.ReplaceValue,{"date_added", "release_year", "rating", "duration", "listed_in", "description"}),
+				    #"Split Column by Delimiter" = Table.SplitColumn(#"Replaced Value4", "listed_in", Splitter.SplitTextByDelimiter(",", QuoteStyle.Csv), {"listed_in.1", "listed_in.2", "listed_in.3"}),
+				    #"Changed Type1" = Table.TransformColumnTypes(#"Split Column by Delimiter",{{"listed_in.1", type text}, {"listed_in.2", type text}, {"listed_in.3", type text}}),
+				    #"Renamed Columns" = Table.RenameColumns(#"Changed Type1",{{"listed_in.1", "category 1"}, {"listed_in.2", "category 2"}, {"listed_in.3", "category 3"}}),
+				    #"Filtered Rows" = Table.SelectRows(#"Renamed Columns", each true),
+				    #"Sorted Rows" = Table.Sort(#"Filtered Rows",{{"show_id", Order.Ascending}}),
+				    #"Removed Top Rows" = Table.Skip(#"Sorted Rows",1),
+				    #"Removed Top Rows1" = Table.Skip(#"Removed Top Rows",1)
+				in
+				    #"Removed Top Rows1"
+
+	annotation PBI_NavigationStepName = Navigation
+
+	annotation PBI_ResultType = Table
+
